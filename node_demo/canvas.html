@@ -1,0 +1,127 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-git.js"></script>
+<script>
+window.onload = function () {
+
+var dps = []; // dataPoints
+var chart = new CanvasJS.Chart("chartContainer", {
+	title :{
+		text: "Micro:bit Accelerometer.This is powered by Node.js",
+		fontSize: 30
+	},
+	subtitles:[
+	{
+			text: "艾鍗學院",
+			//Uncomment properties below to see how they behave
+			fontColor: "red",
+			fontSize: 30
+	},
+	{
+			text: "",
+			//Uncomment properties below to see how they behave
+			fontSize: 15
+	},
+	
+
+	
+	],
+	axisY: {
+		includeZero: false
+	},      
+	data: [{
+		type: "line",
+		dataPoints: dps
+	}]
+});
+
+var xVal = 0;
+var yVal = 100; 
+var btn_A = 0; 
+var btn_B = 0; 
+var updateInterval = 200;
+var dataLength = 20; // number of dataPoints visible at any point
+
+var updateChart = function (count) {
+
+	count = count || 1;
+
+	for (var j = 0; j < count; j++) {
+		//yVal = yVal +  Math.round(5 + Math.random() *(-5-5));
+		
+		dps.push({
+			x: xVal,
+			y: yVal
+		});
+		xVal++;
+	}
+
+	if (dps.length > dataLength) {
+		dps.shift();
+	}
+
+	chart.render();
+};
+
+function update_image()
+{
+
+if (btn_A==1)
+  $("#myImage").attr("src","img/pic_bulbon.gif");
+else 
+ 
+  $("#myImage").attr("src","img/pic_bulboff.gif");
+}
+
+
+
+setInterval(function(){get_acc()}, updateInterval);
+
+
+
+
+function get_acc() {
+
+ console.log('send http get');
+ var t1=Date.now();
+$.ajax({
+  url: "http://127.0.0.1:3000/sensor",
+  method: "GET",
+  success: function(Jdata) {
+    console.log(Jdata);
+	yVal=Jdata.Acc_X;
+	btn_A=Jdata.btn_A;
+	btn_B=Jdata.btn_B;
+	//var item=Jdata.user[0]["username"]+":"+count;
+    updateChart();
+	update_image();
+	
+  },  
+  error: function() {
+    alert("AJAX ERROR!!!");
+  }
+});
+
+ 
+}
+
+$("#getdata").click( function() {
+	console.log('get data');
+	get_acc()
+	
+});
+
+}
+</script>
+</head>
+<body>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+<button id='getdata'>Get data</button>
+<button id="open_btn">Turn on the light</button>
+<img id="myImage" src="img/pic_bulboff.gif" style="width:100px">
+<button id="close_btn" >Turn off the light</button>
+</body>
+</html>
